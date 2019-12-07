@@ -327,7 +327,7 @@ if __name__ == '__main__':
     # training data
     train_dataset, val_dataset, eval_metric = get_dataset(args.dataset, args)
     train_data, val_data = get_dataloader(
-        async_net, train_dataset, val_dataset, args.data_shape, args.batch_size, args.numworkers, args)
+        async_net, train_dataset, val_dataset, args.data_shape, args.batch_size, args.num_workers, args)
 
     # training
     train(net, train_data, val_data, eval_metric, ctx, args)

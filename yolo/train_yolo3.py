@@ -310,12 +310,13 @@ if __name__ == '__main__':
     args.save_prefix += net_name
     # use sync bn if specified
     if args.syncbn and len(ctx) > 1:
-        net = get_model(net_name, classes = len(MY_CLASSES), pretrained_base =False, norm_layer=gluon.contrib.nn.SyncBatchNorm,
+        net = get_model(net_name, pretrained_base =False, norm_layer=gluon.contrib.nn.SyncBatchNorm,
                         norm_kwargs={'num_devices': len(ctx)})
-        async_net = get_model(net_name, classes = len(MY_CLASSES), pretrained_base=False)  # used by cpu worker
+        async_net = get_model(net_name,  pretrained_base=False)  # used by cpu worker
     else:
-        net = get_model(net_name, classes = len(MY_CLASSES), pretrained_base=False)
+        net = get_model(net_name, pretrained_base=False)
         async_net = net
+    net.reset_class(classes=CLASSES)
     if args.resume.strip():
         net.load_parameters(args.resume.strip())
         async_net.load_parameters(args.resume.strip())

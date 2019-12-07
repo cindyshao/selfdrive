@@ -316,7 +316,8 @@ if __name__ == '__main__':
     else:
         net = get_model(net_name, pretrained_base=False)
         async_net = net
-    net.reset_class(classes= MY_CLASSES)
+    class_relative = {0:'dog', 1:'car', 2: 'car',3: 'car',4: 'car',5: 'car',6: 'car',7: 'car',8: 'car',9:'motorbike', 10:'motorbike',11:'bus', 12:'bus', 13:'bus', 14:'bicycle', 15:'boat', 16: 'aeroplane', 17: 'aeroplane', 18:'bus',19:'bus',20:'bus',21:'bus',22:'train'}
+    net.reset_class(classes= MY_CLASSES, reuse_weights = class_relative)
     if args.resume.strip():
         net.load_parameters(args.resume.strip())
         async_net.load_parameters(args.resume.strip())

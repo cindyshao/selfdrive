@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 import getopt, sys
 
 DATA_DIR = '/home/ubuntu/data-2019/'
-LIST_DIR = '../data_lists/'
+LIST_DIR = '/home/ubuntu/selfdrive/data_lists/'
 def rot(n):
     n = np.asarray(n).flatten()
     assert(n.size == 3)

@@ -316,7 +316,7 @@ if __name__ == '__main__':
     else:
         net = get_model(net_name, pretrained_base=False)
         async_net = net
-    net.reset_class(classes=CLASSES)
+    net.reset_class(classes= MY_CLASSES)
     if args.resume.strip():
         net.load_parameters(args.resume.strip())
         async_net.load_parameters(args.resume.strip())

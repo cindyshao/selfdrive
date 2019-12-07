@@ -26,8 +26,7 @@ from gluoncv.utils import LRScheduler, LRSequential
 MY_CLASSES =  ['Unknown', 'Compacts', 'Sedans', 'SUVs', 'Coupes',
             'Muscle', 'SportsClassics', 'Sports', 'Super', 'Motorcycles',
             'OffRoad', 'Industrial', 'Utility', 'Vans', 'Cycles',
-            'Boats', 'Helicopters', 'Planes', 'Service', 'Emergency',
-            'Military', 'Commercial', 'Trains']
+            'Boats', 'Helicopters', 'Planes', 'Service', 'Emergency']
 def parse_args():
     parser = argparse.ArgumentParser(description='Train YOLO networks with random input shape.')
     parser.add_argument('--network', type=str, default='darknet53',

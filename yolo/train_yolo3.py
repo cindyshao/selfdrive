@@ -94,7 +94,7 @@ def parse_args():
 
 def get_dataset(dataset, args):
     if dataset.lower() == 'voc':
-        train_dataset = LstDetection('val.txt', root=os.path.expanduser('.'))
+        train_dataset = LstDetection('train.txt', root=os.path.expanduser('.'))
         val_dataset = LstDetection('val.txt', root=os.path.expanduser('.'))
         classes = ['Unknown', 'Compacts', 'Sedans', 'SUVs', 'Coupes',
             'Muscle', 'SportsClassics', 'Sports', 'Super', 'Motorcycles',
@@ -299,9 +299,9 @@ if __name__ == '__main__':
     gutils.random.seed(args.seed)
 
     # training contexts
-    # ctx = [mx.gpu(int(i)) for i in args.gpus.split(',') if i.strip()]
-    # ctx = ctx if ctx else [mx.cpu()]
-    ctx = mx.cpu(0)
+    ctx = [mx.gpu(int(i)) for i in args.gpus.split(',') if i.strip()]
+    ctx = ctx if ctx else [mx.cpu()]
+    # ctx = mx.cpu(0)
     # network
     net_name = '_'.join(('yolo3', args.network, args.dataset))
     args.save_prefix += net_name

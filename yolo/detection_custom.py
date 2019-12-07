@@ -102,6 +102,12 @@ def demo(snapshot):
         box = [xmin, ymin, xmax, ymax]
         all_boxes.append(box)
         label = b[9]
+        if label == 22:
+            label = 0
+        elif label == 21:
+            label = 18
+        elif label == 20:
+            label = 19
         all_labels.append(label)
 
     all_boxes = np.asarray(all_boxes)

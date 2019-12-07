@@ -22,6 +22,12 @@ from gluoncv.utils.metrics.voc_detection import VOC07MApMetric
 from gluoncv.utils.metrics.coco_detection import COCODetectionMetric
 from gluoncv.utils import LRScheduler, LRSequential
 
+
+MY_CLASSES =  ['Unknown', 'Compacts', 'Sedans', 'SUVs', 'Coupes',
+            'Muscle', 'SportsClassics', 'Sports', 'Super', 'Motorcycles',
+            'OffRoad', 'Industrial', 'Utility', 'Vans', 'Cycles',
+            'Boats', 'Helicopters', 'Planes', 'Service', 'Emergency',
+            'Military', 'Commercial', 'Trains']
 def parse_args():
     parser = argparse.ArgumentParser(description='Train YOLO networks with random input shape.')
     parser.add_argument('--network', type=str, default='darknet53',
@@ -96,13 +102,8 @@ def get_dataset(dataset, args):
     if dataset.lower() == 'voc':
         train_dataset = LstDetection('train.txt', root=os.path.expanduser('.'))
         val_dataset = LstDetection('val.txt', root=os.path.expanduser('.'))
-        classes = ['Unknown', 'Compacts', 'Sedans', 'SUVs', 'Coupes',
-            'Muscle', 'SportsClassics', 'Sports', 'Super', 'Motorcycles',
-            'OffRoad', 'Industrial', 'Utility', 'Vans', 'Cycles',
-            'Boats', 'Helicopters', 'Planes', 'Service', 'Emergency',
-            'Military', 'Commercial', 'Trains']
-        train_dataset.classes = classes
-        val_dataset.classes = classes
+        train_dataset.classes = MY_CLASSES
+        val_dataset.classes = MY_CLASSES
         val_metric = VOC07MApMetric(iou_thresh=0.5, class_names=classes)
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))
@@ -309,11 +310,11 @@ if __name__ == '__main__':
     args.save_prefix += net_name
     # use sync bn if specified
     if args.syncbn and len(ctx) > 1:
-        net = get_model(net_name, pretrained_base=False, norm_layer=gluon.contrib.nn.SyncBatchNorm,
+        net = get_model(net_name, classs = len(MY_CLASS), pretrained_base =False, norm_layer=gluon.contrib.nn.SyncBatchNorm,
                         norm_kwargs={'num_devices': len(ctx)})
-        async_net = get_model(net_name, pretrained_base=False)  # used by cpu worker
+        async_net = get_model(net_name, classs = len(MY_CLASS), pretrained_base=False)  # used by cpu worker
     else:
-        net = get_model(net_name, pretrained_base=False)
+        net = get_model(net_name, classs = len(MY_CLASS), pretrained_base=False)
         async_net = net
     if args.resume.strip():
         net.load_parameters(args.resume.strip())

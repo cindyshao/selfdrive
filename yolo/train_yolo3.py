@@ -104,7 +104,7 @@ def get_dataset(dataset, args):
         val_dataset = LstDetection('val.txt', root=os.path.expanduser('.'))
         train_dataset.classes = MY_CLASSES
         val_dataset.classes = MY_CLASSES
-        val_metric = VOC07MApMetric(iou_thresh=0.5, class_names=classes)
+        val_metric = VOC07MApMetric(iou_thresh=0.5, class_names=MY_CLASSES)
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))
     if args.num_samples < 0:

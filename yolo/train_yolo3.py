@@ -168,7 +168,7 @@ def validate(net, val_data, ctx, eval_metric):
             # split ground truths
             gt_ids.append(y.slice_axis(axis=-1, begin=4, end=5))
             gt_bboxes.append(y.slice_axis(axis=-1, begin=0, end=4))
-            gt_difficults.append(y.slice_axis(axis=-1, begin=5, end=6) if y.shape[-1] > 5 else 0)
+            gt_difficults.append(y.slice_axis(axis=-1, begin=5, end=6) if y.shape[-1] > 5 else None)
 
         # update metric
         eval_metric.update(det_bboxes, det_ids, det_scores, gt_bboxes, gt_ids, gt_difficults)
@@ -246,6 +246,8 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
         mx.nd.waitall()
         net.hybridize()
         for i, batch in enumerate(train_data):
+            if i>2:
+                break
             batch_size = batch[0].shape[0]
             data = gluon.utils.split_and_load(batch[0], ctx_list=ctx, batch_axis=0)
             # objectness, center_targets, scale_targets, weights, class_targets

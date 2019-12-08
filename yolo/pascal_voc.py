@@ -1,103 +1,90 @@
-"""Prepare PASCAL VOC datasets
-==============================
+"""Prepare PASCAL VOC datasets"""
+import os
+import shutil
+import argparse
+import tarfile
+from gluoncv.utils import download, makedirs
 
-`Pascal VOC <http://host.robots.ox.ac.uk/pascal/VOC/>`_ is a collection of
-datasets for object detection. The most commonly combination for
-benchmarking is using *2007 trainval* and *2012 trainval* for training and *2007
-test* for validation. This tutorial will walk through the steps of
-preparing this dataset for GluonCV.
-
-.. image:: http://host.robots.ox.ac.uk/pascal/VOC/pascal2.png
-
-.. hint::
-
-   You need 8.4 GB disk space to download and extract this dataset. SSD is
-   preferred over HDD because of its better performance.
-
-   The total time to prepare the dataset depends on your Internet speed and disk
-   performance. For example, it often takes 10 min on AWS EC2 with EBS.
-
-Prepare the dataset
--------------------
-
-We need the following four files from Pascal VOC:
-
-+------------------------------------------------------------------------------------------------------------------------+--------+------------------------------------------+
-| Filename                                                                                                               | Size   | SHA-1                                    |
-+========================================================================================================================+========+==========================================+
-| `VOCtrainval_06-Nov-2007.tar <http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar>`_            | 439 MB | 34ed68851bce2a36e2a223fa52c661d592c66b3c |
-+------------------------------------------------------------------------------------------------------------------------+--------+------------------------------------------+
-| `VOCtest_06-Nov-2007.tar <http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar>`_                    | 430 MB | 41a8d6e12baa5ab18ee7f8f8029b9e11805b4ef1 |
-+------------------------------------------------------------------------------------------------------------------------+--------+------------------------------------------+
-| `VOCtrainval_11-May-2012.tar  <http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar>`_           | 1.9 GB | 4e443f8a2eca6b1dac8a6c57641b67dd40621a49 |
-+------------------------------------------------------------------------------------------------------------------------+--------+------------------------------------------+
-| `benchmark.tgz <http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/semantic_contours/benchmark.tgz>`_   | 1.4 GB | 7129e0a480c2d6afb02b517bb18ac54283bfaa35 |
-+------------------------------------------------------------------------------------------------------------------------+--------+------------------------------------------+
-
-The easiest way to download and unpack these files is to download helper script
-:download:`pascal_voc.py<../../../scripts/datasets/pascal_voc.py>` and run
-the following command:
-
-.. code-block:: bash
-
-    python pascal_voc.py
-
-which will automatically download and extract the data into ``~/.mxnet/datasets/voc``.
-
-If you already have the above files sitting on your disk,
-you can set ``--download-dir`` to point to them.
-For example, assuming the files are saved in ``~/VOCdevkit/``, you can run:
-
-.. code-block:: bash
-
-   python pascal_voc.py --download-dir ~/VOCdevkit
-
-"""
-
-################################################################
-# Read with GluonCV
-# -----------------
-#
-# Loading images and labels is straight-forward with
-# :py:class:`gluoncv.data.VOCDetection`.
+_TARGET_DIR = os.path.expanduser('~/.mxnet/datasets/voc')
 
 
-from gluoncv import data, utils
-from matplotlib import pyplot as plt
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description='Initialize PASCAL VOC dataset.',
+        epilog='Example: python pascal_voc.py --download-dir ~/VOCdevkit',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--download-dir', type=str, default='~/VOCdevkit/', help='dataset directory on disk')
+    parser.add_argument('--no-download', action='store_true', help='disable automatic download if set')
+    parser.add_argument('--overwrite', action='store_true', help='overwrite downloaded files if set, in case they are corrupted')
+    args = parser.parse_args()
+    return args
 
-train_dataset = data.VOCDetection(splits=[(2007, 'trainval'), (2012, 'trainval')])
-val_dataset = data.VOCDetection(splits=[(2007, 'test')])
-print('Num of training images:', len(train_dataset))
-print('Num of validation images:', len(val_dataset))
+#####################################################################################
+# Download and extract VOC datasets into ``path``
 
-
-################################################################
-# Now let's visualize one example.
-
-train_image, train_label = train_dataset[5]
-print('Image size (height, width, RGB):', train_image.shape)
-
-##################################################################
-# Take bounding boxes by slice columns from 0 to 4
-bounding_boxes = train_label[:, :4]
-print('Num of objects:', bounding_boxes.shape[0])
-print('Bounding boxes (num_boxes, x_min, y_min, x_max, y_max):\n',
-      bounding_boxes)
-
-##################################################################
-# take class ids by slice the 5th column
-class_ids = train_label[:, 4:5]
-print('Class IDs (num_boxes, ):\n', class_ids)
-
-##################################################################
-# Visualize image, bounding boxes
-utils.viz.plot_bbox(train_image.asnumpy(), bounding_boxes, scores=None,
-                    labels=class_ids, class_names=train_dataset.classes)
-plt.show()
+def download_voc(path, overwrite=False):
+    _DOWNLOAD_URLS = [
+        ('http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar',
+         '34ed68851bce2a36e2a223fa52c661d592c66b3c'),
+        ('http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar',
+         '41a8d6e12baa5ab18ee7f8f8029b9e11805b4ef1'),
+        ('http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar',
+         '4e443f8a2eca6b1dac8a6c57641b67dd40621a49')]
+    makedirs(path)
+    for url, checksum in _DOWNLOAD_URLS:
+        filename = download(url, path=path, overwrite=overwrite, sha1_hash=checksum)
+        # extract
+        with tarfile.open(filename) as tar:
+            tar.extractall(path=path)
 
 
-##################################################################
-# Finally, to use both ``train_dataset`` and ``val_dataset`` for training, we
-# can pass them through data transformations and load with
-# :py:class:`mxnet.gluon.data.DataLoader`, see :download:`train_ssd.py
-# <../../../scripts/detection/ssd/train_ssd.py>` for more information.
+#####################################################################################
+# Download and extract the VOC augmented segmentation dataset into ``path``
+
+def download_aug(path, overwrite=False):
+    _AUG_DOWNLOAD_URLS = [
+        ('http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/semantic_contours/benchmark.tgz', '7129e0a480c2d6afb02b517bb18ac54283bfaa35')]
+    makedirs(path)
+    for url, checksum in _AUG_DOWNLOAD_URLS:
+        filename = download(url, path=path, overwrite=overwrite, sha1_hash=checksum)
+        # extract
+        with tarfile.open(filename) as tar:
+            tar.extractall(path=path)
+            shutil.move(os.path.join(path, 'benchmark_RELEASE'),
+                        os.path.join(path, 'VOCaug'))
+            filenames = ['VOCaug/dataset/train.txt', 'VOCaug/dataset/val.txt']
+            # generate trainval.txt
+            with open(os.path.join(path, 'VOCaug/dataset/trainval.txt'), 'w') as outfile:
+                for fname in filenames:
+                    fname = os.path.join(path, fname)
+                    with open(fname) as infile:
+                        for line in infile:
+                            outfile.write(line)
+
+
+if __name__ == '__main__':
+    args = parse_args()
+    path = os.path.expanduser(args.download_dir)
+    if not os.path.isdir(path) or not os.path.isdir(os.path.join(path, 'VOC2007')) \
+        or not os.path.isdir(os.path.join(path, 'VOC2012')):
+        if args.no_download:
+            raise ValueError(('{} is not a valid directory, make sure it is present.'
+                              ' Or you should not disable "--no-download" to grab it'.format(path)))
+        else:
+            download_voc(path, overwrite=args.overwrite)
+            shutil.move(os.path.join(path, 'VOCdevkit', 'VOC2007'), os.path.join(path, 'VOC2007'))
+            shutil.move(os.path.join(path, 'VOCdevkit', 'VOC2012'), os.path.join(path, 'VOC2012'))
+            shutil.rmtree(os.path.join(path, 'VOCdevkit'))
+
+    if not os.path.isdir(os.path.join(path, 'VOCaug')):
+        if args.no_download:
+            raise ValueError(('{} is not a valid directory, make sure it is present.'
+                              ' Or you should not disable "--no-download" to grab it'.format(path)))
+        else:
+            download_aug(path, overwrite=args.overwrite)
+
+    # make symlink
+    makedirs(os.path.expanduser('~/.mxnet/datasets'))
+    if os.path.isdir(_TARGET_DIR):
+        os.remove(_TARGET_DIR)
+    os.symlink(path, _TARGET_DIR)

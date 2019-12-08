@@ -127,9 +127,8 @@ def read_data(folder):
             im_fname = DATA_DIR + 'trainval' + '/'+ name
             img = plt.imread(im_fname)
             all_boxes, all_ids = demo(im_fname)
-            for i in range(0, len(all_ids)):
-                line = write_line(im_fname, img.shape, all_boxes, all_ids, i)
-                fw.write(line)
+            line = write_line(im_fname, img.shape, all_boxes, all_ids, i)
+            fw.write(line)
 
 
 def main():

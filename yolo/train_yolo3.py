@@ -168,7 +168,7 @@ def validate(net, val_data, ctx, eval_metric):
             # split ground truths
             gt_ids.append(y.slice_axis(axis=-1, begin=4, end=5))
             gt_bboxes.append(y.slice_axis(axis=-1, begin=0, end=4))
-            gt_difficults.append(y.slice_axis(axis=-1, begin=5, end=6) if y.shape[-1] > 5 else None)
+            gt_difficults.append(y.slice_axis(axis=-1, begin=5, end=6) if y.shape[-1] > 5 else 0)
 
         # update metric
         eval_metric.update(det_bboxes, det_ids, det_scores, gt_bboxes, gt_ids, gt_difficults)
@@ -246,6 +246,8 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
         mx.nd.waitall()
         net.hybridize()
         for i, batch in enumerate(train_data):
+            if i > 10:
+                break
             batch_size = batch[0].shape[0]
             data = gluon.utils.split_and_load(batch[0], ctx_list=ctx, batch_axis=0)
             # objectness, center_targets, scale_targets, weights, class_targets
@@ -309,11 +311,11 @@ if __name__ == '__main__':
     args.save_prefix += net_name
     # use sync bn if specified
     if args.syncbn and len(ctx) > 1:
-        net = get_model(net_name, pretrained_base =True, norm_layer=gluon.contrib.nn.SyncBatchNorm,
+        net = get_model(net_name, pretrained_base =False, norm_layer=gluon.contrib.nn.SyncBatchNorm,
                         norm_kwargs={'num_devices': len(ctx)})
         async_net = get_model(net_name,  pretrained_base=False) # used by cpu worker
     else:
-        net = get_model(net_name, pretrained_base=True)
+        net = get_model(net_name, pretrained_base=False)
         async_net = net
     # class_relative = {0:'dog', 1:'car', 2: 'car',3: 'car',4: 'car',5: 'car',6: 'car',7: 'car',8: 'car',9:'motorbike', 10:'motorbike',11:'bus', 12:'bus', 13:'bus', 14:'bicycle', 15:'boat', 16: 'aeroplane', 17: 'aeroplane', 18:'bus',19:'bus',20:'bus',21:'bus',22:'train'}
     # net.reset_class(classes= MY_CLASSES, reuse_weights = class_relative)

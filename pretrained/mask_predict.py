@@ -1,5 +1,5 @@
 from gluoncv import model_zoo, data, utils
-import mxnet as mx
+# import mxnet as mx
 from matplotlib import pyplot as plt
 import numpy as np
 from glob import glob
@@ -7,8 +7,13 @@ import csv
 import os
 import sys
 
-INPUT_DIR = '/Users/cindyshao/Dropbox/ME599/project/rob535-fall-2019-task-1-image-classification/'
-OUTPUT_DIR = '/Users/cindyshao/Dropbox/ME599/'
+# INPUT_DIR = '/Users/cindyshao/Dropbox/ME599/project/rob535-fall-2019-task-1-image-classification/'
+# IMG_DIR = '/Users/cindyshao/Dropbox/ME599/project/rob535-fall-2019-task-1-image-classification/data-2019/'
+# OUTPUT_DIR = '/Users/cindyshao/Dropbox/ME599/'
+
+INPUT_DIR = '/home/ubuntu/selfdrive/data_lists/'
+IMG_DIR = '/home/ubuntu/data-2019/'
+OUTPUT_DIR = '/home/ubuntu/selfdrive/pretrained/'
 def main(type):
     ######################################################################
     # Load a pretrained model
@@ -19,13 +24,14 @@ def main(type):
     # ``pretrained=True``, it will automatically download the model from the model
     # zoo if necessary. For more pretrained models, please refer to
     # :doc:`../../model_zoo/index`.
+    # ctx = mx.cpu()
     ctx = mx.gpu(0)
-    net = model_zoo.get_model('mask_rcnn_resnet50_v1b_coco', pretrained=True, ctx = ctx)
+    net = model_zoo.get_model('mask_rcnn_resnet50_v1b_coco', pretrained=True, ctx=ctx)
     file_name = INPUT_DIR + 'labels_' + type + '.csv'
     test_data = np.loadtxt(file_name, skiprows=1, dtype=str, delimiter=',')
     labels = test_data[:, 1].astype(np.uint8)
     files = test_data[:, 0]
-    name = OUTPUT_DIR + '/ '+ type + '_labels.csv'
+    name = OUTPUT_DIR + '/'+ type + '_labels.csv'
     with open(name, 'w') as f:
         writer = csv.writer(f, delimiter=',', lineterminator='\n')
         writer.writerow(['guid/image', 'label'])
@@ -41,14 +47,18 @@ def main(type):
 
 
 def process(fname,net,type):
-    dir = INPUT_DIR + 'data-2019/' + type + '/'
+    if type == 'train' or 'val':
+        # folder = 'trainval/'
+        folder = 'val/'
+    else:
+        foder = 'test/'
+    dir = IMG_DIR + folder
     im_fname = dir + fname
     num_class = 80
     if not os.path.isfile(im_fname):
         return [-5] * num_class
 
     x, img = data.transforms.presets.rcnn.load_test(im_fname)
-
     ids, scores, bboxes, masks = [xx[0].asnumpy() for xx in net(x)]
 
     # class_IDs = class_IDs.asnumpy()

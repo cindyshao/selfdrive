@@ -1,5 +1,5 @@
 from gluoncv import model_zoo, data, utils
-# import mxnet as mx
+import mxnet as mx
 from matplotlib import pyplot as plt
 import numpy as np
 from glob import glob
@@ -48,8 +48,8 @@ def main(type):
 
 def process(fname,net,type):
     if type == 'train' or 'val':
-        # folder = 'trainval/'
-        folder = 'val/'
+        folder = 'trainval/'
+        # folder = 'val/'
     else:
         foder = 'test/'
     dir = IMG_DIR + folder

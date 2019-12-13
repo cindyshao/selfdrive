@@ -28,14 +28,14 @@ def main(type):
     # zoo if necessary. For more pretrained models, please refer to
     # :doc:`../../model_zoo/index`.
 
-    # net = model_zoo.get_model('yolo3_darknet53_voc', pretrained=True)
-    net = model_zoo.get_model('yolo3_mobilenet1.0_voc', pretrained=False)
-    net.load_parameters('yolo3_mobilenet1.0_voc_best.params')
+    net = model_zoo.get_model('yolo3_darknet53_voc', pretrained=True)
+    # net = model_zoo.get_model('yolo3_mobilenet1.0_voc', pretrained=False)
+    # net.load_parameters('yolo3_mobilenet1.0_voc_best.params')
     file_name = INPUT_DIR + 'labels_' + type + '.csv'
     test_data = np.loadtxt(file_name, skiprows=1, dtype=str, delimiter=',')
     labels = test_data[:, 1].astype(np.uint8)
     files = test_data[:, 0]
-    name = OUTPUT_DIR + '/ '+ type + '_labels.csv'
+    name = OUTPUT_DIR + '/'+ type + '_labels.csv'
     with open(name, 'w') as f:
         writer = csv.writer(f, delimiter=',', lineterminator='\n')
         writer.writerow(['guid/image', 'label'])
@@ -64,11 +64,16 @@ def process(fname,net,type):
     class_IDs = class_IDs.asnumpy()
     class_IDs = class_IDs.astype(np.int8)
     scores = scores.asnumpy()
-    im_score = np.zeros(num_class)
+    bounding_boxs = bounding_boxs.asnumpy()
+    # im_score = np.zeros(num_class)
+    im_score = np.zeros(2*num_class)
 
     for i, class_ID in enumerate(class_IDs[0, :, 0]):
         if class_ID > 0:
-            im_score[class_ID] = scores[0][i][0]
+            im_score[2*class_ID] = scores[0][i][0]
+            xmin, ymin, xmax, ymax = bounding_boxs[0][i]
+            size = (xmax-xmin)*(ymax-ymin)
+            im_score[2*class_ID+1] = size
 
     return im_score
 

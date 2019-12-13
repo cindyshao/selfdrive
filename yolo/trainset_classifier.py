@@ -19,14 +19,14 @@ def main():
     Y_train = train_data[:, 1].astype(np.int8)
     Y_test = test_data[:, 1].astype(np.int8)
     X_train = train_data[:, 2:].astype(np.float32)
-    X_train = np.multiply(1000, X_train)
+    X_train = np.multiply(100, X_train)
     X_test = test_data[:, 2:].astype(np.float32)
-    X_test = np.multiply(1000, X_test)
+    X_test = np.multiply(100, X_test)
 
 
-    clf = svm.SVC(decision_function_shape='ovo',gamma='auto')
+    # clf = svm.SVC(decision_function_shape='ovr',gamma='auto')
     # clf = tree.DecisionTreeClassifier()
-    # clf = AdaBoostClassifier(n_estimators=10)
+    clf = AdaBoostClassifier(n_estimators=10)
     # clf = RandomForestClassifier(n_estimators=10)
     # clf = SGDClassifier(loss="hinge", penalty="l2", max_iter=1000)
     clf.fit(X_train, Y_train)

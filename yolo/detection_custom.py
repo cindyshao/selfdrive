@@ -120,7 +120,8 @@ def read_data(folder):
     list_data = LIST_DIR + 'labels_' +folder + '.csv'
     test_data = np.loadtxt(list_data, skiprows=1, dtype=str, delimiter=',')
     files = test_data[:, 0]
-    write_file = folder + '.txt'
+    writer = csv.writer(f, delimiter=',', lineterminator='\n')
+    writer.writerow(['guid/image', 'label'])
     with open(write_file, 'w') as fw:
         for j, file in enumerate(files):
             name = file + '_image.jpg'

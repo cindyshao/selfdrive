@@ -1,0 +1,6 @@
+classes=3
+train=/media/ml/Backup/ROB535_Perception/rob535-fall-2019-task-1-image-classification/train_location.txt
+valid=/media/ml/Backup/ROB535_Perception/rob535-fall-2019-task-1-image-classification/val_location.txt
+names=data/car.names
+backup=backup/
+eval=coco
